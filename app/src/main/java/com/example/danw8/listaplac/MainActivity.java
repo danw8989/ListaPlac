@@ -1,5 +1,6 @@
 package com.example.danw8.listaplac;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -15,6 +16,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -69,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        arr = myDB.getData("SELECT * FROM pracownicy");
+        arr = myDB.getData("SELECT imie,nazwisko FROM pracownicy");
         adapter = new ArrayAdapter<String>(this, R.layout.activity_listview, arr);
         myList = (ListView) findViewById(R.id.mobile_list);
         myList.setAdapter(adapter);
@@ -78,21 +80,42 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent i = new Intent(getBaseContext(), Hours.class);
-                i.putExtra("ID", position+1);
+
+                String ID = (myDB.getData("Select id from pracownicy where imie ='" + arr.get(position).split(" ")[0] + "' and nazwisko = '" + arr.get(position).split(" ")[1] + "'").get(0));
+                i.putExtra("ID", Integer.parseInt(ID.split(" ")[0]));
                 startActivity(i);
             }
         });
         myList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                return false;
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
                 // TODO: Usuwanie/Edycja Pracownika/ContextMenu.
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Chcesz usunąć pracownika?");
+                builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        String ID = (myDB.getData("Select id from pracownicy where imie ='" + arr.get(position).split(" ")[0] + "' and nazwisko = '" + arr.get(position).split(" ")[1] + "'").get(0));
+                        myDB.execSql("DELETE FROM place WHERE pracownik_id = " + Integer.parseInt(ID.split(" ")[0]));
+                        myDB.execSql("DELETE FROM pracownicy WHERE id = " + Integer.parseInt(ID.split(" ")[0]));
+                        UpdateList();
+                    }
+                });
+
+                builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
+                return true;
             }
         });
     }
 
     private void UpdateList() {
-        arr = myDB.getData("SELECT * FROM pracownicy");
+        arr = myDB.getData("SELECT imie,nazwisko FROM pracownicy");
         adapter = new ArrayAdapter<String>(this, R.layout.activity_listview, arr);
         myList.setAdapter(adapter);
     }
