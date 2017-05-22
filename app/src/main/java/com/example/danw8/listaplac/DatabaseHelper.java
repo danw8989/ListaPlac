@@ -40,11 +40,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result == -1 ? false : true;
     }
 
+    public boolean insertHours(int id, String dateTime, int godziny)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues data = new ContentValues();
+        data.put("data", dateTime);
+        data.put("godziny", godziny);
+        data.put("pracownik_id", id);
+        long result = db.insert("place", null, data);
+        return result == -1 ? false : true;
+    }
+
     public void ClearDB()
     {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM pracownicy");
         db.execSQL("DELETE FROM sqlite_sequence WHERE name='pracownicy';");
+        db.execSQL("DELETE FROM place");
+        db.execSQL("DELETE FROM sqlite_sequence WHERE name='place';");
+    }
+
+    public void execSql(String sql)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL(sql);
     }
 
     public LinkedList<String> getData(String sql)
@@ -62,5 +81,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         res.close();
         return list;
     }
+
+
 
 }
