@@ -21,7 +21,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS pracownicy (id INTEGER PRIMARY KEY AUTOINCREMENT, imie TEXT, nazwisko TEXT)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS pracownicy (id INTEGER PRIMARY KEY AUTOINCREMENT, imie TEXT, nazwisko TEXT, stawka REAL)");
         db.execSQL("CREATE TABLE IF NOT EXISTS place (data TEXT, godziny INT, pracownik_id INT)");
     }
 
@@ -36,6 +36,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues data = new ContentValues();
         data.put("imie", imie);
         data.put("nazwisko", nazwisko);
+        data.put("stawka", 0);
         long result = db.insert("pracownicy", null, data);
         return result == -1 ? false : true;
     }
@@ -66,9 +67,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(sql);
     }
 
-    public LinkedList<String> getData(String sql)
+    public int getSingleInt(String sql)
     {
         SQLiteDatabase db = this.getWritableDatabase();
+        Cursor res = db.rawQuery(sql, null);
+        int tmp = 0;
+        if (res.getCount() != 0)
+            while (res.moveToNext()) {
+                tmp = res.getInt(0);
+            }
+        res.close();
+        return tmp;
+    }
+
+    public float getSingleFloat(String sql)
+    {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res = db.rawQuery(sql, null);
+        float tmp = 0;
+        if (res.getCount() != 0) {
+            res.moveToFirst();
+            tmp = res.getFloat(0);
+        }
+        res.close();
+        return tmp;
+    }
+
+
+    public LinkedList<String> getData(String sql)
+    {
+        SQLiteDatabase db = this.getReadableDatabase();
         Cursor res = db.rawQuery(sql, null);
         LinkedList<String> list = new LinkedList<String>();
         if (res.getCount() != 0)
